@@ -30,7 +30,23 @@ Create table if not exists users(
     telegram_id varchar(200),
     created_at timestamp default now(),
     is_active boolean default true
+);
+   
+Create table if not exists tasks(
+    task_id serial primary key,
+    title varchar(100),
+    caption text,
+    telegram_id varchar(200),
+    due_date varchar(200),
+    created_at timestamp default now(),
+    status boolean default false,
+    is_active boolean default true
+
 )   
+
+
+
+
                      
                      """)
         print("Table created")
