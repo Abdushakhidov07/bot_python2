@@ -1,6 +1,7 @@
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command, CommandStart, CommandObject
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram import F
 from dotenv import load_dotenv 
 from service import *
 from connection import *
@@ -16,18 +17,33 @@ dp = Dispatcher()
 
 
 
+main_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📋 Мои задачи")],
+        [KeyboardButton(text="🆘 Помощь")],
+    ],
+    resize_keyboard=True,
+)
+
+
+
+
+
+
+
+
 @dp.message(CommandStart())
 async def start_bot(message: Message):
     if await  get_user_by_id(message.from_user.id):
-        await message.answer(f"Hello @{message.from_user.username}")
+        await message.answer(f"Hello @{message.from_user.username}", reply_markup=main_kb)
     else:
         user = message.from_user
         await create_user(user.username, user.full_name, user.id)
-        await message.answer(f"Hello @{message.from_user.username}")
+        await message.answer(f"Hello @{message.from_user.username}", reply_markup=main_kb)
 
 
 
-
+@dp.message(F.text == "🆘 Помощь")
 @dp.message(Command("help"))
 async def help(message: Message):
     await message.answer(f"Этот телеграм бот имеет толька две команды /help и /start")
@@ -55,7 +71,7 @@ async def add_task(message: Message, command: CommandObject):
         await message.answer(f"Task with name {data[0]} get error in created")
 
         
-
+@dp.message(F.text == "📋 Мои задачи")
 @dp.message(Command("get_my_tasks"))
 async def help(message: Message):
     tasks = await get_task_by_id(message.from_user.id)
@@ -74,6 +90,23 @@ Created at: {task['created_at']}
                              """
     await message.answer(text)
 
+@dp.message(Command("update_task"))
+async def update_task(message: Message, command: CommandObject):
+    data = command.args
+    data = data.split("/")
+    if await update_task_db(data[0], data[1], data[2], data[3], message.from_user.id):
+        await message.answer(f"Task with name {data[1]} update successful")
+    else:
+        await message.answer(f"Task with name {data[1]} get error in update")
+
+@dp.message(Command("delete_task"))
+async def delete_task(message: Message, command: CommandObject):
+    data = command.args
+    data = data.split("/")
+    if await delete_task_db(data[0], message.from_user.id):
+        await message.answer(f"Task with name {data[0]} delete successful")
+    else:
+        await message.answer(f"Task with name {data[0]} get error in delete")
 
 
 

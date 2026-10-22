@@ -70,3 +70,36 @@ async def get_task_by_id(telegram_id):
         print(f"Get task by id Error: {Error}")
     finally:
         await conn.close()
+
+
+async def update_task_db(task_id, title, caption, due_date, telegram_id):
+    try:
+        conn = await connection_db()
+        await conn.execute("""
+        UPDATE tasks
+        SET title = $1, caption = $2, due_date = $3
+        where task_id = $4 and telegram_id = $5 
+                     """, title, caption, due_date, int(task_id), str(telegram_id))
+        return True 
+    except Exception as Error:
+        print(f"Update task Error: {Error}")
+        return False
+    finally:
+        await conn.close()
+        
+        
+        
+        
+async def delete_task_db(task_id,telegram_id):
+    try:
+        conn = await connection_db()
+        await conn.execute("""
+        DELETE From tasks
+        where task_id = $1 and telegram_id = $2
+                     """, int(task_id), str(telegram_id))
+        return True 
+    except Exception as Error:
+        print(f"Delete task Error: {Error}")
+        return False
+    finally:
+        await conn.close()
